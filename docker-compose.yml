@@ -14,6 +14,7 @@ services:
     image: wordpress:php7.3-fpm-alpine
     volumes:
       - ./wordpress:/var/www/html
+      - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     depends_on:
       - mysql
     environment:
@@ -36,4 +37,4 @@ services:
     links:
       - wordpress
 volumes:
-  dbdata: 
+  dbdata:
