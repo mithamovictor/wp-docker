@@ -33,4 +33,10 @@ To build css and js run
 npm run build
 ```
 
+To enable wordpress install plugins directly, add these above ```define('DB_NAME', '')``` on the wp-config.php file
+```
+/* Make WordPress install plugins directly */
+define('FS_METHOD', 'direct');
+```
+
 Developed by [Karungaru Mithamo](https://mithamovictor.github.io)
