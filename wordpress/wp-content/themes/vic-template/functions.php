@@ -12,8 +12,9 @@ require_once('inc/comments-walker.php');
 
 function register_theme_styles() {
   wp_enqueue_style('styles', get_stylesheet_directory_uri().'/style.css', [], '1.0.0', 'all');
-  wp_enqueue_style('stylesheet', get_stylesheet_directory_uri().'/dist/app.css', [], '1.0.0', 'all');
-  wp_enqueue_script('scripts', get_stylesheet_directory_uri().'/dist/app.js', [], '1.0.0', false);
+  wp_enqueue_style('tailwindcss', get_stylesheet_directory_uri().'/dist/css/tailwind.min.css', [], '1.0.0', 'all');
+  wp_enqueue_style('stylesheet', get_stylesheet_directory_uri().'/dist/css/app.css', [], '1.0.0', 'all');
+  wp_enqueue_script('scripts', get_stylesheet_directory_uri().'/dist/js/app.js', [], '1.0.0', false);
 }
 
 add_action('wp_enqueue_scripts', 'register_theme_styles');

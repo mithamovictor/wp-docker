@@ -1,21 +1,36 @@
-'use strict';
+'use-strict';
 
-const gulp         = require( 'gulp' );
-const autoprifixer = require( 'gulp-autoprefixer' );
-const sass         = require( 'gulp-sass' );
-const concat       = require( 'gulp-concat' );
-const cleanCss     = require( 'gulp-clean-css' );
-const imagemin     = require( 'gulp-imagemin' );
-const sourcemaps   = require( 'gulp-sourcemaps' );
-const rimraf       = require( 'rimraf' );
-const uglify       = require( 'gulp-uglify' );
-const babel        = require( 'gulp-babel' );
-const jshint       = require( 'gulp-jshint' );
-const rename       = require( 'gulp-rename' );
+const gulp = require('gulp');
+const rimraf = require('rimraf');
+const notify = require('gulp-notify');
+const plumber = require('gulp-plumber');
+const beep = require('beepbeep');
+const sourcemaps = require('gulp-sourcemaps');
+const sass = require('gulp-sass');
+const autoprefixer = require('gulp-autoprefixer');
+const postcss = require('gulp-postcss');
+const cleanCss = require('gulp-clean-css');
+const browserSync = require('browser-sync').create();
+const babel = require('gulp-babel');
+const concat = require('gulp-concat');
+const concatcss = require('gulp-concat-css');
+const remember = require('gulp-remember');
+const rename = require('gulp-rename');
+const uglify = require('gulp-uglify');
+const imagemin = require('gulp-imagemin');
+const cache = require('gulp-cache');
+const tailwindcss = require('tailwindcss');
 
+const config = {
+  url: "localhost:8080",
+  port: 8080,
+  browserAutoOpen: true,
+  injectChanges: true,
+  babelPresets: ['@babel/preset-env'],
+}
 
 /**
- * Delete the "dist" folder every time a build starts
+ * Delete the "dist" folder for each build
  */
 gulp.task('clean',
   (done)=>{
@@ -24,68 +39,165 @@ gulp.task('clean',
 );
 
 /**
- * Compile CSS
+ * Handle Errors
  */
-gulp.task('css',
-  ()=>{
-    return gulp
-      .src('./src/scss/**/*.scss')
-      .pipe(sourcemaps.init())
-      .pipe(sass({outputStyle: 'compressed'})
-      .on('error', sass.logError))
-      .pipe(autoprifixer())
-      .pipe(cleanCss({compatibility: 'ie9'}))
-      .pipe(sourcemaps.write())
-      .pipe(gulp.dest('./dist/css'));
-  }
-);
+const errorHandler = r => {
+  notify.onError('\n\n❌ ===> ERROR: <%= error.message %>\n')(r);
+  beep();
+  // this.emit('end');
+}
 
 /**
- * Compile JS
+ * Define browser sync
  */
-gulp.task('js',
-  ()=>{
-    return gulp
-      .src('./src/js/**/*.js')
-      .pipe(babel({presets: ['@babel/env']}))
-      .pipe(concat('app.js'))
-      .pipe(gulp.dest('./dist/js'))
-      .pipe(rename({extname: '.min.js'}))
-      .pipe(uglify().on('error', (e)=>{console.dir(e)}))
-      .pipe(gulp.dest('./dist/js'));
-  }
-);
+gulp.task('browser-sync', ()=>{
+  browserSync.init({
+    watch: true,
+    open: config.browserAutoOpen,
+    port: config.port,
+    proxy: config.url,
+    reloadOnRestart: true
+  });
+});
+
+/**
+ * Reload Helper
+ */
+const reload = done => {
+  browserSync.reload();
+  done();
+}
+
+/**
+ * Compile SCSS to CSS
+ */
+gulp.task('css', ()=>{
+  return gulp.src('./src/css/**/*.css', { allowEmpty: true})
+    .pipe(plumber(errorHandler))
+    .pipe(sourcemaps.init())
+    .pipe(postcss([
+      require('postcss-import'),
+      tailwindcss('./tailwind.config.js'),
+      require('autoprefixer')
+    ]))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./dist/css'))
+    .pipe(sourcemaps.init())
+    .pipe(postcss([
+      require('postcss-import'),
+      tailwindcss('./tailwind.config.js'),
+      require('autoprefixer')
+    ]))
+    .pipe(rename({
+      suffix: '.min'
+    }))
+    .pipe(cleanCss({compatibility: 'ie9'}))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./dist/css'))
+    .pipe(browserSync.stream())
+    .pipe(
+			notify({
+				message: '\n\n✅  ===> CSS — completed!\n',
+				onLast: true
+			})
+		);
+});
+
+/**
+ * Compile SCSS to CSS
+ */
+gulp.task('scss', ()=>{
+  return gulp.src('./src/scss/**/*.scss', { allowEmpty: true})
+    .pipe(plumber(errorHandler))
+    .pipe(sourcemaps.init())
+    .pipe(sass({outputStyle: 'expanded'})
+    .on('error', sass.logError))
+    .pipe(autoprefixer())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./dist/css'))
+    .pipe(sourcemaps.init())
+    .pipe(
+      sass({ outputStyle: 'compressed' })
+      .on('error', sass.logError)
+    )
+    .pipe(rename({
+      suffix: '.min'
+    }))
+    .pipe(autoprefixer())
+    .pipe(cleanCss({compatibility: 'ie9'}))
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('./dist/css'))
+    .pipe(browserSync.stream())
+    .pipe(
+			notify({
+				message: '\n\n✅  ===> SCSS — completed!\n',
+				onLast: true
+			})
+		);
+});
+
+/**
+ * Compile the JS
+ */
+gulp.task('js', ()=>{
+  return gulp.src('./src/js/**/*.js')
+    .pipe(plumber(errorHandler))
+    .pipe(babel({presets: config.babelPresets}))
+    .pipe(remember('./src/js/**/*.js'))
+    .pipe(concat('app.js'))
+    .pipe(gulp.dest('./dist/js'))
+    .pipe(rename({ extname: '.min.js' }))
+    .pipe(uglify())
+    .pipe(gulp.dest('./dist/js'))
+    .pipe(
+			notify({
+				message: '\n\n✅  ===> JS — completed!\n',
+				onLast: true
+			})
+		);
+});
 
 /**
  * Compile Images
  */
-gulp.task('img',
-  ()=>{
-    return gulp
-      .src('./src/img/**/*')
-      .pipe(imagemin())
-      .pipe(gulp.dest('./dist/img'));
-  }
-);
+gulp.task('images', ()=>{
+  return gulp.src('./src/img/**/*')
+    .pipe(cache(imagemin()))
+    .pipe(gulp.dest('./dist/img'))
+    .pipe(
+      notify({
+        message: '\n\n✅  ===> IMAGES — completed!\n',
+				onLast: true
+      })
+    );
+});
 
+/**
+ * Clear cache
+ */
+gulp.task('clearCache', done=>{
+  return cache.clearAll(done);
+});
 
 /**
  * Watch for changes
  */
-gulp.task('watch',
-  ()=>{
-    gulp.watch('./src/scss/**/*.scss', gulp.parallel('css'));
-    gulp.watch('./src/js/**/*.js', gulp.parallel('js'));
-    gulp.watch('./src/img/**/*', gulp.parallel('img'));
-  }
+gulp.task('default',
+  gulp.series('clean',
+    gulp.parallel('css', 'scss', 'js', 'images', 'browser-sync', ()=>{
+      gulp.watch('./**/*.php', gulp.parallel('css', 'clearCache', reload));
+      gulp.watch('./src/scss/**/*.scss', gulp.parallel('scss', 'clearCache', reload));
+      gulp.watch('./src/js/**/*.js', gulp.series('js', 'clearCache', reload));
+      gulp.watch('./src/img/**/*', gulp.parallel('images', 'clearCache', reload));
+    })
+  )
 );
-
 
 /**
  * Build function
  */
 gulp.task('build',
   gulp.series('clean',
-    gulp.parallel('css', 'js', 'img')
+    gulp.parallel('css', 'scss', 'js', 'images', 'browser-sync' ),
   )
 );
