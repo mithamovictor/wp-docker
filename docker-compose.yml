@@ -1,37 +1,69 @@
-version: '3'
+version: "3"
 services:
   mysql:
     image: mariadb
     volumes:
       - dbdata:/var/lib/mysql
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
     environment:
+      TZ: Africa/Nairobi
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: wp_db
       MYSQL_USER: wp_admin
       MYSQL_PASSWORD: wp_pass
     restart: always
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    environment:
+      TZ: Africa/Nairobi
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+      PMA_USER: wp_admin
+      PMA_PASSWORD: wp_pass
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    restart: always
+    ports:
+      - 8081:80
   wordpress:
     image: wordpress:php7.3-fpm-alpine
     volumes:
       - ./wordpress:/var/www/html
       - ./uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
     depends_on:
       - mysql
     environment:
+      TZ: Africa/Nairobi
       WORDPRESS_DB_HOST: mysql
       MYSQL_ROOT_PASSWORD: root
       WORDPRESS_DB_NAME: wp_db
       WORDPRESS_DB_USER: wp_admin
       WORDPRESS_DB_PASSWORD: wp_pass
       WORDPRESS_TABLE_PREFIX: wp_
+      WORDPRESS_DEBUG: "true"
     links:
       - mysql
     restart: always
   nginx:
     image: nginx:alpine
+    environment:
+      TZ: Africa/Nairobi
     volumes:
       - ./nginx:/etc/nginx/conf.d
       - ./wordpress:/var/www/html
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
     ports:
       - 8080:80
     links:
