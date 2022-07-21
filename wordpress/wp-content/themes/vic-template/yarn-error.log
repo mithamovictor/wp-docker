@@ -1,0 +1,58 @@
+Arguments: 
+  /home/vic/.nvm/versions/node/v16.15.1/bin/node /home/vic/.nvm/versions/node/v16.15.1/bin/yarn add -D webpack webpack-cli browser-sync browser-sync-webpack-plugin css-loader glob imagemin-webpack-plugin mini-css-webpack-plugin postcss-loader sass sass-loader style-loader tailwindcss webpack-merge
+
+PATH: 
+  /home/vic/.local/share/gem/ruby/3.0.0/bin:/home/vic/.nvm/versions/node/v16.15.1/bin:/home/vic/.config/composer/vendor/bin:/home/vic/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/var/lib/flatpak/exports/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.15.1
+
+Platform: 
+  linux x64
+
+Trace: 
+  Error: https://registry.yarnpkg.com/mini-css-webpack-plugin: Not found
+      at Request.params.callback [as _callback] (/home/vic/.nvm/versions/node/v16.15.1/lib/node_modules/yarn/lib/cli.js:66145:18)
+      at Request.self.callback (/home/vic/.nvm/versions/node/v16.15.1/lib/node_modules/yarn/lib/cli.js:140890:22)
+      at Request.emit (node:events:527:28)
+      at Request.<anonymous> (/home/vic/.nvm/versions/node/v16.15.1/lib/node_modules/yarn/lib/cli.js:141862:10)
+      at Request.emit (node:events:527:28)
+      at IncomingMessage.<anonymous> (/home/vic/.nvm/versions/node/v16.15.1/lib/node_modules/yarn/lib/cli.js:141784:12)
+      at Object.onceWrapper (node:events:641:28)
+      at IncomingMessage.emit (node:events:539:35)
+      at endReadableNT (node:internal/streams/readable:1345:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
+
+npm manifest: 
+  {
+    "name": "theme",
+    "private": true,
+    "version": "1.0.0",
+    "description": "This is a wordpress theme boilerplate",
+    "main": "gulpfile.js",
+    "repository": {
+      "type": "git",
+      "url": "git+ssh://git@github.com:mithamovictor/wp-docker.git"
+    },
+    "keywords": [],
+    "author": "Karungaru Mithamo",
+    "license": "MIT",
+    "homepage": "https://github.com/mithamovictor/wp-docker#readme",
+    "scripts": {
+      "start": "gulp",
+      "build": "gulp build"
+    },
+    "devDependencies": {},
+    "dependencies": {
+      "flowbite": "^1.3.3"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
